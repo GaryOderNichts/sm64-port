@@ -34,7 +34,7 @@ struct ShaderProgram {
     bool used_textures[2];
     uint8_t num_floats;
     bool used_noise;
-    uint32_t window_params_offset;
+    uint32_t frame_count_offset;
     uint32_t samplers_location[2];
 };
 
@@ -106,9 +106,9 @@ static void gfx_whb_unload_shader(struct ShaderProgram *old_prg) {
 
 static void gfx_whb_set_uniforms(struct ShaderProgram *prg) {
     if (prg->used_noise) {
-        float window_params_array[2] = { (float) current_height, (float) frame_count };
+        float frame_count_buf = (float) frame_count;
 
-        GX2SetPixelUniformReg(prg->window_params_offset, 2, window_params_array);
+        GX2SetPixelUniformReg(prg->frame_count_offset, 1, &frame_count_buf);
     }
 }
 
@@ -148,7 +148,7 @@ static struct ShaderProgram *gfx_whb_create_and_load_new_shader(uint32_t shader_
 
     WHBLogPrintf("Loaded shader");
 
-    prg->window_params_offset = GX2GetPixelUniformVarOffset(&prg->group.pixelShader, "window_params");
+    prg->frame_count_offset = GX2GetPixelUniformVarOffset(&prg->group.pixelShader, "frame_count");
     prg->samplers_location[0] = GX2GetPixelSamplerVarLocation(&prg->group.pixelShader, "uTex0");
     prg->samplers_location[1] = GX2GetPixelSamplerVarLocation(&prg->group.pixelShader, "uTex1");
 

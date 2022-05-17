@@ -114,32 +114,22 @@ static void append_formula(uint64_t **alu_ptr, uint8_t c[2][4], bool do_single, 
 }
 
 static const uint64_t noise_instructions[] = {
-    /* R127 = floor(gl_FragCoord.xy * (240.0f / window_params.x)) */
-    ALU_RECIP_IEEE(__, _x, _C(0), _x) SCL_210
+    /* floor(vec3(gl_FragCoord.x, gl_FragCoord.y, frame_count)) */
+    ALU_FLOOR(_R127, _x, _R0, _x),
+    ALU_FLOOR(_R127, _y, _R0, _y),
+    ALU_FLOOR(_R127, _z, _C(0), _x)
     ALU_LAST,
 
-    ALU_MUL_IEEE(__, _x, ALU_SRC_PS, _x, ALU_SRC_LITERAL, _x)
-    ALU_LAST,
-    ALU_LITERAL(0x43700000 /* 240.0f */),
-
-    ALU_MUL(__, _x, _R0, _x, ALU_SRC_PV, _x),
-    ALU_MUL(__, _y, _R0, _y, ALU_SRC_PV, _x)
-    ALU_LAST,
-
-    ALU_FLOOR(_R127, _x, ALU_SRC_PV, _x),
-    ALU_FLOOR(_R127, _y, ALU_SRC_PV, _y)
-    ALU_LAST,
-
-    /* R127 = sin(vec3(R127.x, R127.y, window_params.y)) */
-    ALU_MULADD(_R127, _x, _R127, _x, ALU_SRC_LITERAL, _x, ALU_SRC_0_5, _x),
-    ALU_MULADD(_R127, _y, _R127, _y, ALU_SRC_LITERAL, _x, ALU_SRC_0_5, _x),
-    ALU_MULADD(_R127, _z, _C(0), _y, ALU_SRC_LITERAL, _x, ALU_SRC_0_5, _x)
+    /* R127 = sin(R127) */
+    ALU_MULADD(_R127, _x, ALU_SRC_PV, _x, ALU_SRC_LITERAL, _x, ALU_SRC_0_5, _x),
+    ALU_MULADD(_R127, _y, ALU_SRC_PV, _y, ALU_SRC_LITERAL, _x, ALU_SRC_0_5, _x),
+    ALU_MULADD(_R127, _z, ALU_SRC_PV, _z, ALU_SRC_LITERAL, _x, ALU_SRC_0_5, _x)
     ALU_LAST,
     ALU_LITERAL(0x3E22F983 /* 0.1591549367f (radians -> revolutions) */),
 
-    ALU_FRACT(__, _x, _R127, _x),
-    ALU_FRACT(__, _y, _R127, _y),
-    ALU_FRACT(__, _z, _R127, _z)
+    ALU_FRACT(__, _x, ALU_SRC_PV, _x),
+    ALU_FRACT(__, _y, ALU_SRC_PV, _y),
+    ALU_FRACT(__, _z, ALU_SRC_PV, _z)
     ALU_LAST,
 
     ALU_MULADD(_R127, _x, ALU_SRC_PV, _x, ALU_SRC_LITERAL, _x, ALU_SRC_LITERAL, _y),
@@ -205,7 +195,7 @@ static const uint64_t noise_instructions[] = {
 };
 
 static GX2UniformVar uniformVars[] = {
-    { "window_params", GX2_SHADER_VAR_TYPE_FLOAT2, 1, 0, -1, },
+    { "frame_count", GX2_SHADER_VAR_TYPE_FLOAT, 1, 0, -1, },
 };
 
 static GX2SamplerVar samplerVars[] = {
