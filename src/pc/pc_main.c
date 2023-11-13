@@ -15,6 +15,7 @@
 #include "gfx/gfx_direct3d11.h"
 #include "gfx/gfx_direct3d12.h"
 #include "gfx/gfx_dxgi.h"
+#include "gfx/gfx_egl.h"
 #include "gfx/gfx_gx2.h"
 #include "gfx/gfx_glx.h"
 #include "gfx/gfx_sdl.h"
@@ -162,8 +163,10 @@ void main_func(void) {
 #if defined(TARGET_WII_U)
     save_config(); // Mount SD write now
 
-    rendering_api = &gfx_gx2_api;
-    wm_api = &gfx_gx2_window;
+    // rendering_api = &gfx_gx2_api;
+    // wm_api = &gfx_gx2_window;
+    rendering_api = &gfx_opengl_api;
+    wm_api = &gfx_egl;
     configFullscreen = true;
 #elif defined(ENABLE_DX12)
     rendering_api = &gfx_direct3d12_api;

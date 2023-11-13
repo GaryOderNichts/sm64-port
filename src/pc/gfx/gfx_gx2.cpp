@@ -1,4 +1,4 @@
-#ifdef TARGET_WII_U
+#ifdef __TARGET_WII_U
 
 #include <malloc.h>
 #include <stdint.h>

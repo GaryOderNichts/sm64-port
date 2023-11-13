@@ -175,21 +175,21 @@ static struct ShaderProgram *gfx_opengl_create_and_load_new_shader(uint32_t shad
     size_t num_floats = 4;
 
     // Vertex shader
-    append_line(vs_buf, &vs_len, "#version 110");
-    append_line(vs_buf, &vs_len, "attribute vec4 aVtxPos;");
+    append_line(vs_buf, &vs_len, "#version 300 es");
+    append_line(vs_buf, &vs_len, "in vec4 aVtxPos;");
     if (cc_features.used_textures[0] || cc_features.used_textures[1]) {
-        append_line(vs_buf, &vs_len, "attribute vec2 aTexCoord;");
-        append_line(vs_buf, &vs_len, "varying vec2 vTexCoord;");
+        append_line(vs_buf, &vs_len, "in vec2 aTexCoord;");
+        append_line(vs_buf, &vs_len, "out vec2 vTexCoord;");
         num_floats += 2;
     }
     if (cc_features.opt_fog) {
-        append_line(vs_buf, &vs_len, "attribute vec4 aFog;");
-        append_line(vs_buf, &vs_len, "varying vec4 vFog;");
+        append_line(vs_buf, &vs_len, "in vec4 aFog;");
+        append_line(vs_buf, &vs_len, "out vec4 vFog;");
         num_floats += 4;
     }
     for (int i = 0; i < cc_features.num_inputs; i++) {
-        vs_len += sprintf(vs_buf + vs_len, "attribute vec4 aInput%d;\n", i + 1);
-        vs_len += sprintf(vs_buf + vs_len, "varying vec4 vInput%d;\n", i + 1);
+        vs_len += sprintf(vs_buf + vs_len, "in vec4 aInput%d;\n", i + 1);
+        vs_len += sprintf(vs_buf + vs_len, "out vec4 vInput%d;\n", i + 1);
         num_floats += 4;
     }
     append_line(vs_buf, &vs_len, "void main() {");
@@ -206,16 +206,17 @@ static struct ShaderProgram *gfx_opengl_create_and_load_new_shader(uint32_t shad
     append_line(vs_buf, &vs_len, "}");
 
     // Fragment shader
-    append_line(fs_buf, &fs_len, "#version 110");
-    //append_line(fs_buf, &fs_len, "precision mediump float;");
+    append_line(fs_buf, &fs_len, "#version 300 es");
+    append_line(fs_buf, &fs_len, "precision mediump float;");
+    append_line(fs_buf, &fs_len, "out vec4 FragColor;");
     if (cc_features.used_textures[0] || cc_features.used_textures[1]) {
-        append_line(fs_buf, &fs_len, "varying vec2 vTexCoord;");
+        append_line(fs_buf, &fs_len, "in vec2 vTexCoord;");
     }
     if (cc_features.opt_fog) {
-        append_line(fs_buf, &fs_len, "varying vec4 vFog;");
+        append_line(fs_buf, &fs_len, "in vec4 vFog;");
     }
     for (int i = 0; i < cc_features.num_inputs; i++) {
-        fs_len += sprintf(fs_buf + fs_len, "varying vec4 vInput%d;\n", i + 1);
+        fs_len += sprintf(fs_buf + fs_len, "in vec4 vInput%d;\n", i + 1);
     }
     if (cc_features.used_textures[0]) {
         append_line(fs_buf, &fs_len, "uniform sampler2D uTex0;");
@@ -237,10 +238,10 @@ static struct ShaderProgram *gfx_opengl_create_and_load_new_shader(uint32_t shad
     append_line(fs_buf, &fs_len, "void main() {");
 
     if (cc_features.used_textures[0]) {
-        append_line(fs_buf, &fs_len, "vec4 texVal0 = texture2D(uTex0, vTexCoord);");
+        append_line(fs_buf, &fs_len, "vec4 texVal0 = texture(uTex0, vTexCoord);");
     }
     if (cc_features.used_textures[1]) {
-        append_line(fs_buf, &fs_len, "vec4 texVal1 = texture2D(uTex1, vTexCoord);");
+        append_line(fs_buf, &fs_len, "vec4 texVal1 = texture(uTex1, vTexCoord);");
     }
 
     append_str(fs_buf, &fs_len, cc_features.opt_alpha ? "vec4 texel = " : "vec3 texel = ");
@@ -272,9 +273,9 @@ static struct ShaderProgram *gfx_opengl_create_and_load_new_shader(uint32_t shad
     }
 
     if (cc_features.opt_alpha) {
-        append_line(fs_buf, &fs_len, "gl_FragColor = texel;");
+        append_line(fs_buf, &fs_len, "FragColor = texel;");
     } else {
-        append_line(fs_buf, &fs_len, "gl_FragColor = vec4(texel, 1.0);");
+        append_line(fs_buf, &fs_len, "FragColor = vec4(texel, 1.0);");
     }
     append_line(fs_buf, &fs_len, "}");
 
@@ -467,7 +468,11 @@ static void gfx_opengl_set_use_alpha(bool use_alpha) {
 
 static void gfx_opengl_draw_triangles(float buf_vbo[], size_t buf_vbo_len, size_t buf_vbo_num_tris) {
     //printf("flushing %d tris\n", buf_vbo_num_tris);
+#ifdef SUBBUFFER_DATA
+    glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(float) * buf_vbo_len, buf_vbo);
+#else
     glBufferData(GL_ARRAY_BUFFER, sizeof(float) * buf_vbo_len, buf_vbo, GL_STREAM_DRAW);
+#endif
     glDrawArrays(GL_TRIANGLES, 0, 3 * buf_vbo_num_tris);
 }
 
@@ -479,6 +484,9 @@ static void gfx_opengl_init(void) {
     glGenBuffers(1, &opengl_vbo);
 
     glBindBuffer(GL_ARRAY_BUFFER, opengl_vbo);
+#ifdef SUBBUFFER_DATA
+    glBufferData(GL_ARRAY_BUFFER, 1024 * 1024 * 5, NULL, GL_STREAM_DRAW);
+#endif
 
     glDepthFunc(GL_LEQUAL);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);

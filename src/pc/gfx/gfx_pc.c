@@ -872,11 +872,11 @@ static void gfx_sp_tri1(uint8_t vtx1_idx, uint8_t vtx2_idx, uint8_t vtx3_idx) {
             }
             buf_vbo[buf_vbo_len++] = u / tex_width;
             buf_vbo[buf_vbo_len++] = v / tex_height;
-#ifdef TARGET_WII_U
-            // Padding for faster GPU reading
-            buf_vbo[buf_vbo_len++] = 0.0f;
-            buf_vbo[buf_vbo_len++] = 0.0f;
-#endif
+// #ifdef TARGET_WII_U
+//             // Padding for faster GPU reading
+//             buf_vbo[buf_vbo_len++] = 0.0f;
+//             buf_vbo[buf_vbo_len++] = 0.0f;
+// #endif
         }
 
         if (use_fog) {
@@ -1629,40 +1629,40 @@ void gfx_init(struct GfxWindowManagerAPI *wapi, struct GfxRenderingAPI *rapi, co
     gfx_wapi->init(game_name, start_in_fullscreen);
     gfx_rapi->init();
 
-    // Used in the 120 star TAS
-    static uint32_t precomp_shaders[] = {
-        0x01200200,
-        0x00000045,
-        0x00000200,
-        0x01200a00,
-        0x00000a00,
-        0x01a00045,
-        0x00000551,
-        0x01045045,
-        0x05a00a00,
-        0x01200045,
-        0x05045045,
-        0x01045a00,
-        0x01a00a00,
-        0x0000038d,
-        0x01081081,
-        0x0120038d,
-        0x03200045,
-        0x03200a00,
-        0x01a00a6f,
-        0x01141045,
-        0x07a00a00,
-        0x05200200,
-        0x03200200,
-        0x09200200,
-        0x0920038d,
-        0x09200045,
-        // Not used in the 120 star TAS, but discovered through testing
-        0x09200a00
-    };
-    for (size_t i = 0; i < sizeof(precomp_shaders) / sizeof(uint32_t); i++) {
-        gfx_lookup_or_create_shader_program(precomp_shaders[i]);
-    }
+    // // Used in the 120 star TAS
+    // static uint32_t precomp_shaders[] = {
+    //     0x01200200,
+    //     0x00000045,
+    //     0x00000200,
+    //     0x01200a00,
+    //     0x00000a00,
+    //     0x01a00045,
+    //     0x00000551,
+    //     0x01045045,
+    //     0x05a00a00,
+    //     0x01200045,
+    //     0x05045045,
+    //     0x01045a00,
+    //     0x01a00a00,
+    //     0x0000038d,
+    //     0x01081081,
+    //     0x0120038d,
+    //     0x03200045,
+    //     0x03200a00,
+    //     0x01a00a6f,
+    //     0x01141045,
+    //     0x07a00a00,
+    //     0x05200200,
+    //     0x03200200,
+    //     0x09200200,
+    //     0x0920038d,
+    //     0x09200045,
+    //     // Not used in the 120 star TAS, but discovered through testing
+    //     0x09200a00
+    // };
+    // for (size_t i = 0; i < sizeof(precomp_shaders) / sizeof(uint32_t); i++) {
+    //     gfx_lookup_or_create_shader_program(precomp_shaders[i]);
+    // }
 }
 
 struct GfxRenderingAPI *gfx_get_current_rendering_api(void) {

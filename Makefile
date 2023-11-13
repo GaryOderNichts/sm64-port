@@ -112,7 +112,7 @@ ifeq ($(TARGET_N64),0)
     MACHDEP	= -DESPRESSO -mcpu=750 -meabi -mhard-float
 
     LIBDIRS	    := $(PORTLIBS) $(WUT_ROOT)
-    INCLUDE	    := $(foreach dir,$(LIBDIRS),-I$(dir)/include)
+    INCLUDE	    := $(foreach dir,$(LIBDIRS),-I$(dir)/include) -I$(PORTLIBS_PATH)/wiiu/include/angle
     LIBPATHS	:=	$(foreach dir,$(LIBDIRS),-L$(dir)/lib)
   endif
 
@@ -576,8 +576,8 @@ ifeq ($(ENABLE_DX12),1)
   PLATFORM_LDFLAGS += -lgdi32 -static
 endif
 ifeq ($(TARGET_WII_U),1)
-  GFX_CFLAGS :=
-  PLATFORM_LDFLAGS += -lSDL2 -lwut
+  GFX_CFLAGS := -DENABLE_OPENGL
+  PLATFORM_LDFLAGS += -lEGL -lGLESv2 -lANGLE -lSDL2 -lwut -lz
 endif
 
 GFX_CFLAGS += -DWIDESCREEN
